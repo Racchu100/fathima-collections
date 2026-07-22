@@ -18,7 +18,8 @@ import {
 import { motion } from 'framer-motion';
 
 export default function OrderSuccessPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+  const unwrappedParams = use(Promise.resolve(params));
+  const id = unwrappedParams?.id || '';
 
   const displayOrderNumber = id.startsWith('FC-') ? id : `FC-2026-${id.slice(-4).toUpperCase()}`;
 

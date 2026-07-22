@@ -27,7 +27,8 @@ import {
 import { motion } from 'framer-motion';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params);
+  const unwrappedParams = use(Promise.resolve(params));
+  const slug = unwrappedParams?.slug || '';
   const router = useRouter();
   const { addToCart, toggleWishlist, isInWishlist } = useStore();
 
