@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { BrandLogo } from '@/components/ui/BrandLogo';
@@ -24,14 +24,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // If on admin login page, skip admin layout wrapper
-  if (pathname === '/admin/login') {
-    return <>{children}</>;
-  }
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('fc_admin_logged_in');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('fc_admin_logged_in');
+    }
     router.push('/admin/login');
   };
 
@@ -45,6 +47,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Reviews', href: '/admin/reviews', icon: Star },
     { name: 'Store Settings', href: '/admin/settings', icon: Settings },
   ];
+
+  // Prevent SSR hydration mismatch on Vercel
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-heading text-xs">
+        Loading Admin Portal...
+      </div>
+    );
+  }
+
+  // If on admin login page, skip admin layout wrapper
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col lg:flex-row w-full">

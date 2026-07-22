@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { ShieldCheck, KeyRound, Mail, ArrowRight, Lock } from 'lucide-react';
@@ -11,6 +11,11 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('admin123password');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,18 +24,28 @@ export default function AdminLoginPage() {
 
     setTimeout(() => {
       if (email.trim() && password.trim()) {
-        localStorage.setItem('fc_admin_logged_in', 'true');
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('fc_admin_logged_in', 'true');
+          } catch (err) {
+            console.error('Storage error:', err);
+          }
+        }
         router.push('/admin/dashboard');
       } else {
         setError('Invalid credentials entered');
         setLoading(false);
       }
-    }, 600);
+    }, 400);
   };
+
+  if (!mounted) {
+    return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400 text-xs">Loading login...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-8">
+      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
         <div className="text-center space-y-3">
           <BrandLogo variant="dark" className="justify-center" />
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-green-500/20 text-brand-green-400 text-xs font-bold uppercase tracking-wider">
