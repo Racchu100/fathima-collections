@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("ADMIN") // ADMIN, STAFF
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  image       String?
+  bannerImage String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id            String         @id @default(uuid())
+  name          String
+  slug          String         @unique
+  description   String
+  price         Float
+  discountPrice Float?
+  stock         Int            @default(10)
+  material      String?
+  isFeatured    Boolean        @default(false)
+  isTrending    Boolean        @default(false)
+  isLimited     Boolean        @default(false)
+  status        String         @default("PUBLISHED") // DRAFT, PUBLISHED, ARCHIVED
+  categoryId    String
+  category      Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  images        ProductImage[]
+  sizes         ProductSize[]
+  colors        ProductColor[]
+  orderItems    OrderItem[]
+  tags          String         @default("[]") // JSON string of tags
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  isPrimary Boolean @default(false)
+  sortOrder Int     @default(0)
+}
+
+model ProductSize {
+  id        String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size      String // S, M, L, XL, XXL, 38, 40, 42, 44
+}
+
+model ProductColor {
+  id        String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String // Emerald, Black, Royal Blue, Cream, Wine, etc.
+  hexCode   String? // #22C55E, #111827, etc.
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  orderNumber   String      @unique // e.g. FC-2026-1001
+  customerName  String
+  customerPhone String
+  customerEmail String?
+  pickupDate    String
+  pickupTime    String
+  addressNotes  String?
+  status        String      @default("PENDING") // PENDING, READY_FOR_PICKUP, COMPLETED, CANCELLED
+  totalAmount   Float
+  items         OrderItem[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productName String
+  image       String?
+  price       Float
+  quantity    Int
+  size        String?
+  color       String?
+}
+
+model Review {
+  id           String   @id @default(uuid())
+  customerName String
+  rating       Int      @default(5)
+  comment      String
+  isApproved   Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
+
+model Banner {
+  id        String   @id @default(uuid())
+  title     String
+  subtitle  String?
+  imageUrl  String
+  linkUrl   String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
